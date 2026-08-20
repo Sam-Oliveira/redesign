@@ -27,6 +27,12 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-Hi! I'm Samuel. I am a Ph.D. student at the [RLAI Lab](https://rlai.ualberta.ca/), supervised by [Rupam Mahmood](https://armahmood.github.io/) and affiliated with [Amii](https://www.amii.ca/). Previously, I graduated with an MSc in Machine Learning at University College London (UCL), and completed my undergraduate degree at Imperial College London.
+Hi! I'm Samuel. I am a Ph.D. student at the [RLAI Lab](https://rlai.ualberta.ca/), supervised by [Rupam Mahmood](https://armahmood.github.io/) and affiliated with [Amii](https://www.amii.ca/).
 
-I am interested in creating decision-making systems that can learn continually. In particular, I am curious about studying these under a reinforcement learning framework, as well as through improvements in current neural network architectures.
+My goal is to create decision-making systems that can **learn continually** as they interact with the world. I see continual learning as a necessary capability of general intelligence, and thus my work revolves around studying how 
+
+To this end, my research focuses on: (1) studying the **causes of forgetting and plasticity loss** in neural networks; (2) developing new **architectures and optimizers for continual learning**; and (3) studying how to create continual learning agents that can actively manage their knowledge unsder **resource constraints**.
+
+Previously, I did my Master's in Machine Learning at [University College London](https://www.ucl.ac.uk/), where I worked on Inverse Reinforcement Learning approaches with diffusion models; and I completed my undergraduate degree at [Imperial College London](https://www.imperial.ac.uk/), where I applied streaming probabilistic algorithms (Sequential Monte-Carlo) to eczema prediction.
+
+Outside of research, you can most likely find me at the tennis court, or swimming.
