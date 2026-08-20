@@ -1,0 +1,182 @@
+{
+  "basics": {
+    "name": "Samuel Oliveira",
+    "label": "Ph.D. Student in Reinforcement Learning",
+    "image": "",
+    "email": "sdolivei@ualberta.ca",
+    "phone": "",
+    "summary": "Ph.D. student at the RLAI Lab, University of Alberta, supervised by Rupam Mahmood and affiliated with Amii. Interested in continual learning, reinforcement learning, and robot learning.",
+    "location": {
+      "address": "",
+      "postalCode": "",
+      "city": "Edmonton",
+      "countryCode": "CA",
+      "region": "Alberta"
+    },
+    "profiles": [
+      {
+        "network": "GitHub",
+        "username": "sam-oliveira",
+        "url": "https://github.com/sam-oliveira"
+      },
+      {
+        "network": "LinkedIn",
+        "username": "sam-oliveira",
+        "url": "https://www.linkedin.com/in/sam-oliveira"
+      },
+      {
+        "network": "X",
+        "username": "sam_ccoliveira",
+        "url": "https://twitter.com/sam_ccoliveira"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "UCL, Ilija Bogunovic's Group",
+      "position": "MSc Thesis Student",
+      "location": "London, UK",
+      "startDate": "2024-05-15",
+      "endDate": "2025-05-15",
+      "summary": "Investigated the use of diffusion models for Inverse Reinforcement Learning.",
+      "highlights": [
+        "Created a model to learn a reward/guide function from a classifier-guided trajectory-level diffusion model.",
+        "Benchmarked the framework against state-of-the-art IRL methods across multiple Gymnasium environments."
+      ]
+    },
+    {
+      "name": "Imperial College London, Tanaka Group",
+      "position": "Research Assistant in Statistical ML",
+      "location": "London, UK",
+      "startDate": "2022-10-10",
+      "endDate": "2023-09-15",
+      "summary": "Undergraduate thesis and research assistantship on computationally efficient prediction of eczema severity, in collaboration with Dr Rob Moss (University of Melbourne).",
+      "highlights": [
+        "Implemented a framework using Sequential Monte Carlo methods to predict symptom severity in eczema patients.",
+        "The framework outputs predictions for each patient in under a second.",
+        "Taught a 2-hour tutorial on SMC methods for the entire lab group."
+      ]
+    },
+    {
+      "name": "Goldman Sachs",
+      "position": "Software Engineering Intern",
+      "location": "Birmingham, UK",
+      "startDate": "2022-06-20",
+      "endDate": "2022-08-26",
+      "summary": "10-week internship as a Software Engineer in the Technology division.",
+      "highlights": [
+        "Built from scratch a pen-testing framework for a new web app hosted on AWS.",
+        "Presented work to 100+ colleagues.",
+        "Received a returning offer.",
+        "Tech stack: Python, AWS, Terraform."
+      ]
+    }
+  ],
+  "volunteer": [],
+  "education": [
+    {
+      "institution": "University of Alberta",
+      "location": "Edmonton, Canada",
+      "url": "https://www.ualberta.ca/en/index.html",
+      "area": "Computer Science",
+      "studyType": "Ph.D.",
+      "startDate": "2025-01-01",
+      "endDate": "2030-01-01",
+      "score": "",
+      "courses": [],
+      "highlights": []
+    },
+    {
+      "institution": "University College London",
+      "location": "London, UK",
+      "url": "https://www.ucl.ac.uk/",
+      "area": "Machine Learning",
+      "studyType": "MSc",
+      "startDate": "2023-01-01",
+      "endDate": "2024-01-01",
+      "score": "",
+      "courses": [],
+      "highlights": []
+    },
+    {
+      "institution": "Imperial College London",
+      "location": "London, UK",
+      "url": "https://www.imperial.ac.uk/",
+      "area": "Computational Bioengineering",
+      "studyType": "MEng",
+      "startDate": "2019-01-01",
+      "endDate": "2023-01-01",
+      "score": "",
+      "courses": [],
+      "highlights": []
+    }
+  ],
+  "awards": [
+    {
+      "title": "Dean's List, 4th Year",
+      "date": "2023-08-05",
+      "awarder": "Imperial College London",
+      "summary": "Top 10% of cohort."
+    },
+    {
+      "title": "Dean's List, 3rd Year",
+      "date": "2022-08-05",
+      "awarder": "Imperial College London",
+      "summary": "Top 10% of cohort."
+    }
+  ],
+  "certificates": [
+    {
+      "name": "GRE: 338/340 (Verbal 169/170, Quantitative 169/170, Analytical Writing 5.0/6.0)",
+      "date": "2022-10-12",
+      "issuer": "ETS",
+      "icon": "fa-solid fa-award"
+    }
+  ],
+  "publications": [],
+  "skills": [
+    {
+      "name": "Machine Learning",
+      "level": "",
+      "icon": "fa-solid fa-brain",
+      "keywords": ["Reinforcement Learning", "Continual Learning", "Robot Learning", "Statistical ML"]
+    },
+    {
+      "name": "Technical",
+      "level": "",
+      "icon": "fa-solid fa-code",
+      "keywords": ["Python", "PyTorch", "AWS", "Terraform"]
+    }
+  ],
+  "languages": [
+    {
+      "language": "English",
+      "fluency": "Fluent",
+      "icon": ""
+    }
+  ],
+  "interests": [
+    {
+      "name": "Research",
+      "icon": "fa-solid fa-flask",
+      "keywords": ["Reinforcement Learning", "Continual Learning", "Robot Learning"]
+    }
+  ],
+  "references": [],
+  "projects": [
+    {
+      "name": "Inverse RL using Generative Planning Models in Trajectory Space",
+      "summary": "MSc thesis on learning reward functions using diffusion models for Inverse Reinforcement Learning.",
+      "highlights": [],
+      "startDate": "2024-10-01",
+      "endDate": "2025-05-15"
+    },
+    {
+      "name": "EczemaPF: Real-Time Eczema Severity Prediction",
+      "summary": "Undergraduate thesis at the Tanaka Group (Imperial College London) on online inference for eczema severity prediction.",
+      "highlights": [],
+      "startDate": "2022-10-10",
+      "endDate": "2023-09-15"
+    }
+  ]
+}
