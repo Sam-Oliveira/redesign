@@ -1,0 +1,4 @@
+User-agent: *
+Disallow:
+
+Sitemap: https://sam-oliveira.github.io/redesign/sitemap.xml
