@@ -1,9 +1,9 @@
 ---
 layout: post
-title: Wrapped up my MSc thesis on diffusion models for Inverse RL
-date: 2025-
+title: Awarded the Alberta Graduate Excellence Scholarship
+date: 2025-11-28
 inline: false
 related_posts: false
 ---
 
-I was awarded the Computing Science Graduate Recruitment Scholarship.
+I was awarded the Alberta Graduate Excellence Scholarship, given by the Government of Alberta, in the value of 12000 CAD.
