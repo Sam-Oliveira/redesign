@@ -2,7 +2,7 @@
 layout: page
 permalink: /photography/
 title: photography
-description: Some of the photos I've taken with my film camera.
+description: Some of the photos I've taken with my film camera around the world.
 nav: true
 nav_order: 4
 horizontal: false
