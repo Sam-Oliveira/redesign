@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.samoliveira.blogsync</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/env</string>
+        <string>python3</string>
+        <string>/Users/sdolivei/Documents/PhD/Careers/sam-site/bin/publish_from_obsidian.py</string>
+    </array>
+
+    <key>StartInterval</key>
+    <integer>120</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/sdolivei/Documents/PhD/Research/Obsidian/Work/Blog Posts/.launchd.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/sdolivei/Documents/PhD/Research/Obsidian/Work/Blog Posts/.launchd.log</string>
+</dict>
+</plist>
