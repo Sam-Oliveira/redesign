@@ -15,6 +15,6 @@ nav_order: 2
 
 <div class="publications">
 
-<!-- Bibliography will be added here once publications are available -->
+{% bibliography %}
 
 </div>

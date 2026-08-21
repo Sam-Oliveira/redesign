@@ -1,12 +1,16 @@
 ---
-layout: cv
+layout: page
 permalink: /cv/
-title: Resume
+title: cv
 nav: true
 nav_order: 5
-cv_pdf: /assets/pdf/resume.pdf # downloadable PDF version of the resume/CV
-cv_format: rendercv # options: rendercv, jsonresume
-description: My resume.
-toc:
-  sidebar: left
+description: My CV, as a PDF. Replace assets/pdf/resume.pdf to update it.
 ---
+
+<div class="text-center mb-3">
+  <a class="btn btn-outline-primary" href="{{ site.baseurl }}/assets/pdf/resume.pdf" target="_blank" rel="noopener">
+    <i class="fas fa-download"></i> Download PDF
+  </a>
+</div>
+
+<embed src="{{ site.baseurl }}/assets/pdf/resume.pdf" type="application/pdf" width="100%" height="1000px" style="border: 1px solid var(--global-divider-color, #ddd); border-radius: 4px;" />
