@@ -6,8 +6,8 @@ title: Samuel Oliveira # the website title (if blank, full name will be used ins
 first_name: Samuel
 middle_name:
 last_name: Oliveira
-contact_note: >
-  Email is the best way to reach me.
+#contact_note: >
+#  Email is the best way to reach me.
 description: > # the ">" symbol means to ignore newlines until "footer_text:"
   Samuel Oliveira's academic website. Ph.D. student in Continual Learning and Reinforcement Learning at the University of Alberta / Amii.
 footer_text: >
@@ -178,17 +178,7 @@ disqus_shortname: al-folio # put your disqus shortname
 # If you have blog posts published on medium.com or other external sources,
 # you can display them in your blog by adding a link to the RSS feed.
 # Optional: Set default categories and tags for posts from each source.
-external_sources:
-  - name: medium.com
-    rss_url: https://medium.com/@al-folio/feed
-    categories: [external-posts]
-    tags: [medium]
-  - name: Google Blog
-    posts:
-      - url: https://blog.google/technology/ai/google-gemini-update-flash-ai-assistant-io-2024/
-        published_date: 2024-05-14
-    categories: [external-posts]
-    tags: [google]
+external_sources: []
 
 # -----------------------------------------------------------------------------
 # Newsletter
