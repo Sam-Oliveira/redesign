@@ -18,23 +18,23 @@ The second phase began with DeepSeek's introduction of Group Relative Policy Opt
 
 Here is how RL maps onto autoregressive text generation:
 
-- **Policy $\pi_\theta​$**: the LLM itself, which defines a probability distribution over tokens given a context.
-- **State $s_t$​**: the full context at timestep $t$, i.e., the prompt concatenated with all tokens generated so far: $s_t=[q_1,…,q_m,o_1,…,o_{t−1}]$ where $q_i$ is a context/prompt token, and $o_i$ is a token generated so far.
-- **Action $a_t$​**: the next token to be generated, drawn from $\pi_\theta(\cdot\|s_t)$.
-- **Transition function P(S'\|s,a)**: the transition probability function, representing the probability of transitioning  to state s′ when taking action a in state s. This is deterministic in standard text-generating LLMs. **However**, In general, the environment dynamics can be more complex. For example, models with tool access have to call the actual tool and receive the environment feedback in context or even modify their environment such as the cases of SWE and Web agents.
+- **Policy $\pi\_\theta​$**: the LLM itself, which defines a probability distribution over tokens given a context.
+- **State $s\_t$​**: the full context at timestep $t$, i.e., the prompt concatenated with all tokens generated so far: $s\_t=[q\_1,…,q\_m,o\_1,…,o\_{t−1}]$ where $q\_i$ is a context/prompt token, and $o\_i$ is a token generated so far.
+- **Action $a\_t$​**: the next token to be generated, drawn from $\pi\_\theta(\cdot  \mid  s\_t)$.
+- **Transition function P(S'  \mid  s,a)**: the transition probability function, representing the probability of transitioning  to state s′ when taking action a in state s. This is deterministic in standard text-generating LLMs. **However**, In general, the environment dynamics can be more complex. For example, models with tool access have to call the actual tool and receive the environment feedback in context or even modify their environment such as the cases of SWE and Web agents.
 - **Trajectory $\tau$**: the complete sequence of states and actions from prompt to end-of-sequence token.
 - **Reward $R$**: a scalar score assigned to the trajectory, typically at the terminal step.
-- **Value function $V^\pi(s_t)$**: the expected cumulative reward when starting in state $s_t$​ and acting according to policy $\pi$.
-- **Advantage $A(s_t,a_t)=Q(s_t,a_t)−V(s_t)$**: how much better action $a_t$ is in state $s_t$ relative to the policy's average performance from that state.
+- **Value function $V^\pi(s\_t)$**: the expected cumulative reward when starting in state $s\_t$​ and acting according to policy $\pi$.
+- **Advantage $A(s\_t,a\_t)=Q(s\_t,a\_t)−V(s\_t)$**: how much better action $a\_t$ is in state $s\_t$ relative to the policy's average performance from that state.
 
 There are two standard MDP formulations. In the (contextual) **bandit formulation**, the entire completion is a single action and the model receives one scalar reward. In the **MDP (token-level) formulation**, each token is a separate action with its own state, enabling per-token credit assignment. PPO uses the MDP formulation; GRPO and most critic-free methods operate at the response level, broadcasting a single scalar advantage to every token in the completion.
 #### 2.1 The RL Objective
 The objective is to maximise the expected cumulative reward:
-							$J(\pi_\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$
+							$J(\pi\_\theta) = \mathbb{E}\_{\tau \sim \pi\_\theta}[R(\tau)]$
 To apply gradient ascent, we use the policy gradient theorem:
-							$\nabla_\theta J(\pi_\theta)=\mathbb{E}_{\tau \sim \pi_\theta}\left[\sum_t \nabla_\theta \log \pi_\theta(a_t\|s_t) \cdot \psi_t \right]$
+							$\nabla\_\theta J(\pi\_\theta)=\mathbb{E}\_{\tau \sim \pi\_\theta}\left[\sum\_t \nabla\_\theta \log \pi\_\theta(a\_t  \mid  s\_t) \cdot \psi\_t \right]$
 
-where $\psi_t$ represents a step-wise weight. Different choices for this weight distinguish the different algorithms used. The key insight is that this gradient requires no differentiation through the reward function or through the discrete sampling process — it only requires log-probabilities of actions under the current policy, making it applicable even when the reward is a non-differentiable external verifier.
+where $\psi\_t$ represents a step-wise weight. Different choices for this weight distinguish the different algorithms used. The key insight is that this gradient requires no differentiation through the reward function or through the discrete sampling process — it only requires log-probabilities of actions under the current policy, making it applicable even when the reward is a non-differentiable external verifier.
 ### 3. The Training Pipeline
 
 Modern LLM training proceeds in distinct stages:
@@ -52,37 +52,37 @@ PPO employs all four models simultaneously: the policy, the reference model, the
 ### 4. Policy Gradient methods: Theoretical Foundation
 
 #### 4.1. REINFORCE
-The simplest policy gradient algorithm, REINFORCE, sets $\psi_t = R(\tau)$, the total trajectory reward. Thus its update rule (averaged over a batch of N trajectories) is:
+The simplest policy gradient algorithm, REINFORCE, sets $\psi\_t = R(\tau)$, the total trajectory reward. Thus its update rule (averaged over a batch of N trajectories) is:
 
-						$\nabla_\theta J(\pi_\theta) \approx \frac{1}{N}\sum_{i=1}^N \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t\|s_t) \cdot R(\tau_i)$
+						$\nabla\_\theta J(\pi\_\theta) \approx \frac{1}{N}\sum\_{i=1}^N \sum\_{t=0}^T \nabla\_\theta \log \pi\_\theta(a\_t \mid s\_t) \cdot R(\tau\_i)$
 
-The intuition is that if a trajectory received a high reward, we should increase the probability of all actions taken. However, there are two main issues with this approach. First, it uses the total trajectory reward, meaning past rewards influence updates to future actions, resulting in a violation of causality (e.g. the reward at time t=0 impacts the gradient of $\pi_\theta(\cdot\|s_5$). Secondly, each step of the trajectory $t=0-T$ is updated in the same way, and thus this update rule does not consider per-step credit assignment. We can correct thus by using the **reward-to-go** formulation, that is $G_t = \sum_{k=t}^T r_k$.
+The intuition is that if a trajectory received a high reward, we should increase the probability of all actions taken. However, there are two main issues with this approach. First, it uses the total trajectory reward, meaning past rewards influence updates to future actions, resulting in a violation of causality (e.g. the reward at time t=0 impacts the gradient of $\pi\_\theta(\cdot \mid s\_5$). Secondly, each step of the trajectory $t=0-T$ is updated in the same way, and thus this update rule does not consider per-step credit assignment. We can correct thus by using the **reward-to-go** formulation, that is $G\_t = \sum\_{k=t}^T r\_k$.
 
-The REINFORCE estimator has high variance, and thus one can introduce a non-action dependent baseline $b(s_t)$. A natural choice for this baseline is $V^{\pi_\theta}(s_t)$, which results in $\psi_t = G_t-V^{\pi_\theta}(s_t) = A_t$ , that is the advantage function. This is the foundation of all actor-critic methods. The key challenge is that $V$ must itself be estimated.
+The REINFORCE estimator has high variance, and thus one can introduce a non-action dependent baseline $b(s\_t)$. A natural choice for this baseline is $V^{\pi\_\theta}(s\_t)$, which results in $\psi\_t = G\_t-V^{\pi\_\theta}(s\_t) = A\_t$ , that is the advantage function. This is the foundation of all actor-critic methods. The key challenge is that $V$ must itself be estimated.
 
 #### 4.2. Importance Sampling
 When the data is generated by a different policy from the one being optimised, the estimator must be corrected by importance sampling weights:
-				$\nabla_\theta J(\pi_\theta)=\mathbb{E}_{\tau \sim \pi_{\theta_\text{old}}} \left[ \sum_t \frac{\pi_\theta(a_t\|s_t)}{\pi_{\theta_\text{old}}(a_t\|s_t)} A^{\pi_{\theta_\text{old}}}(s_t,a_t) \nabla_\theta \log \pi_\theta(a_t\|s_t)\right]$
-PPO uses a clipped version of the importance sampling ratio $\frac{\pi_\theta(a_t\|s_t)}{\pi_{\theta_\text{old}}(a_t\|s_t)}$. Crucially, it only applies this correction to the policy learning update above, and does not apply such a correction when learning the critic/value function.
+				$\nabla\_\theta J(\pi\_\theta)=\mathbb{E}\_{\tau \sim \pi\_{\theta\_\text{old}}} \left[ \sum\_t \frac{\pi\_\theta(a\_t \mid s\_t)}{\pi\_{\theta\_\text{old}}(a\_t \mid s\_t)} A^{\pi\_{\theta\_\text{old}}}(s\_t,a\_t) \nabla\_\theta \log \pi\_\theta(a\_t \mid s\_t)\right]$
+PPO uses a clipped version of the importance sampling ratio $\frac{\pi\_\theta(a\_t \mid s\_t)}{\pi\_{\theta\_\text{old}}(a\_t \mid s\_t)}$. Crucially, it only applies this correction to the policy learning update above, and does not apply such a correction when learning the critic/value function.
 
 ### 5. PPO
 Proximal Policy Optimization (Schulman et al., 2017) improves over vanilla policy gradients along three dimensions: better advantage estimation via GAE, actor-critic architecture, and constrained policy updates via clipping or KL penalties.
 
-**Generalised Advantage Estimation (GAE).** Rather than using the raw Monte Carlo return $G_t$ to estimate the advantage through $A_t = G_t - V(s_t)$​, PPO estimates the advantage using a TD-$\lambda$ style interpolation. The per-step TD error is:
-$\delta_t= r_t + \gamma V(s_{t+1})-V(s_t)$ 
+**Generalised Advantage Estimation (GAE).** Rather than using the raw Monte Carlo return $G\_t$ to estimate the advantage through $A\_t = G\_t - V(s\_t)$​, PPO estimates the advantage using a TD-$\lambda$ style interpolation. The per-step TD error is:
+$\delta\_t= r\_t + \gamma V(s\_{t+1})-V(s\_t)$ 
 and the GAE advantage is estimated as:
-							$\hat{A}_t(\gamma,\lambda)=\sum_{l=0}^\infty (\gamma \lambda)^l \delta_{t+l}$
+							$\hat{A}\_t(\gamma,\lambda)=\sum\_{l=0}^\infty (\gamma \lambda)^l \delta\_{t+l}$
 
-This represents a forward-view estimation of the advantage, which uses the critic estimate. The critic itself is learnt by regressing towards the target $V^\text{target}(s_t) = \hat{A}_t + V(s_t)$, which is equivalent to a standard $\lambda$-return $G_t^\lambda = (1-\lambda) \sum_{n=1}^\infty \lambda^{n-1} G_{t}^{(n)}$. 
+This represents a forward-view estimation of the advantage, which uses the critic estimate. The critic itself is learnt by regressing towards the target $V^\text{target}(s\_t) = \hat{A}\_t + V(s\_t)$, which is equivalent to a standard $\lambda$-return $G\_t^\lambda = (1-\lambda) \sum\_{n=1}^\infty \lambda^{n-1} G\_{t}^{(n)}$. 
 #### 5.1. Algorithm walk-through
-In the LLM setting (Ziegler et al., 2020; Ouyang et al., 2022), PPO maintains four model instances simultaneously: the policy $\pi_\theta$, the reference model $\pi_{ref}$ (the frozen model after SFT), the critic $V_\phi$ (which scores intermediate completions) and the reward model $r$ (which scores complete responses). The training loop proceeds as follows:
+In the LLM setting (Ziegler et al., 2020; Ouyang et al., 2022), PPO maintains four model instances simultaneously: the policy $\pi\_\theta$, the reference model $\pi\_{ref}$ (the frozen model after SFT), the critic $V\_\phi$ (which scores intermediate completions) and the reward model $r$ (which scores complete responses). The training loop proceeds as follows:
 
 **Step 1 - Rollout generation**
-A batch of prompts ${q}$ is sampled from a dataset, and the current policy $\pi_{\theta_\text{old}}$ is used to generate completions ${o}$ autoregressively. Once generation of these is complete, the reward model $r$ scores the full completion, giving a terminal reward $R=r(q,o)$. 
+A batch of prompts ${q}$ is sampled from a dataset, and the current policy $\pi\_{\theta\_\text{old}}$ is used to generate completions ${o}$ autoregressively. Once generation of these is complete, the reward model $r$ scores the full completion, giving a terminal reward $R=r(q,o)$. 
 
 **Step 2 - Reward shaping with Reference Model KL**
 A per-token KL divergence penalty is subtracted from the terminal reward to prevent reward hacking. In most implementations this is distributed across tokens, giving a per-token reward of:
-$r_t = \cases{R-\beta \log \frac{\pi_{\theta_\text{old}}(a_t\|s_t)}{\pi_{ref}(a_t\|s_t)} \text{.    if.  } t=T \text{(terminal token)}\\ - \beta \log \frac{\pi_{\theta_\text{old}}(a_t\|s_t)}{\pi_{ref}(a_t\|s_t)} \text{.    otherwise}}$
+$r\_t = \cases{R-\beta \log \frac{\pi\_{\theta\_\text{old}}(a\_t \mid s\_t)}{\pi\_{ref}(a\_t \mid s\_t)} \text{.    if.  } t=T \text{(terminal token)}\\ - \beta \log \frac{\pi\_{\theta\_\text{old}}(a\_t \mid s\_t)}{\pi\_{ref}(a\_t \mid s\_t)} \text{.    otherwise}}$
 
 Note that this is a constraint against the **frozen SFT model** not against the immediately preceding policy: it enforces long-range fidelity to the original model's language behaviour.
 
@@ -91,68 +91,68 @@ The GAE is calculated as explained above. Typical values are $\gamma \approx 1$ 
 
 **Step 4 - Clipped Policy Objective**
 To prevent large policy updates which lead to instabilities, PPO uses a clipped "importance sampling" ratio that discourages large changes in policy:
-					$\mathcal{L}(\pi_\theta) = \mathbb{E}\left[ \min \left( \rho_t(\theta)\hat{A}_t,clip(\rho_t(\theta),1-\epsilon,1+\epsilon)\hat{A}_t\right)\right]$
-where $\rho_t(\theta)=\frac{\pi_\theta(a_t\|s_t)}{\pi_{\theta_\text{old}}(a_t\|s_t)}$. 
+					$\mathcal{L}(\pi\_\theta) = \mathbb{E}\left[ \min \left( \rho\_t(\theta)\hat{A}\_t,clip(\rho\_t(\theta),1-\epsilon,1+\epsilon)\hat{A}\_t\right)\right]$
+where $\rho\_t(\theta)=\frac{\pi\_\theta(a\_t \mid s\_t)}{\pi\_{\theta\_\text{old}}(a\_t \mid s\_t)}$. 
 Typically $\epsilon=0.2$. 
 
-This clipping is the **trust-region KL** constraint in disguise: it enforces that $\pi_{\theta}$ cannot deviate far from $\pi_{\theta_{old}}$ within a single update step. This is different from the KL against the reference model, which enforces fidelity to the original post-SFT model across the entire training process.
+This clipping is the **trust-region KL** constraint in disguise: it enforces that $\pi\_{\theta}$ cannot deviate far from $\pi\_{\theta\_{old}}$ within a single update step. This is different from the KL against the reference model, which enforces fidelity to the original post-SFT model across the entire training process.
 
-An alternative formulation (PPO-KLPEN) instead adds a KL divergence penalty $D_{KL}(\pi_{\theta_{old}}(\cdot\|s_t)\|\| \pi_\theta(\cdot\|s_t))$ directly to the loss instead of clipping the ratio between the policies, and the weight of this KL divergence on this loss is controlled by a hyperparameter $\beta$ which is updated adaptively. Note this KL divergence is a mean-seeking KL, where $\pi_\theta$ is "forced" to cover all the modes of P.
+An alternative formulation (PPO-KLPEN) instead adds a KL divergence penalty $D\_{KL}(\pi\_{\theta\_{old}}(\cdot \mid s\_t) \mid  \mid  \pi\_\theta(\cdot \mid s\_t))$ directly to the loss instead of clipping the ratio between the policies, and the weight of this KL divergence on this loss is controlled by a hyperparameter $\beta$ which is updated adaptively. Note this KL divergence is a mean-seeking KL, where $\pi\_\theta$ is "forced" to cover all the modes of P.
 
 **Step 5 - Value Learning**
 The critic is trained to regress towards the $\lambda$-return, which can be shown to be equivalent to:
-$V^\text{target}(s_t) = \hat{A}_t + V(s_t)$. Thus we learn the critic by minimizing the loss:
-					$\mathcal{L}(\phi)=\left(V_\phi(s_t)-sg[V^{target}(s_t)]\right)^2$
-where $sg$ denotes a stop-gradient which acts over the value function estimate $V(s_t)$ (the advantage is a scalar).
+$V^\text{target}(s\_t) = \hat{A}\_t + V(s\_t)$. Thus we learn the critic by minimizing the loss:
+					$\mathcal{L}(\phi)=\left(V\_\phi(s\_t)-sg[V^{target}(s\_t)]\right)^2$
+where $sg$ denotes a stop-gradient which acts over the value function estimate $V(s\_t)$ (the advantage is a scalar).
 
 **Pseudocode detail: Multi-epoch updates**
-A key feature of PPO is that it reuses each rollout batch across multiple gradient epochs (typically 2-4). This happens for both the critic and the actor. First, rollouts are obtained (data collection) according to the current policy. Then, for each of the 2-4 epochs, we cycle through minibatches to update both the actor and the critic with each minibatch. This is why the policy clipping in PPO is so important: by the 2nd epoch, $\pi_\theta$ has already been updated away from $\pi_old$, the policy used to collect the data and thus used to estimate the critic. As discussed later on, this multi-epoch reuse means the critic's regression target — computed from $π_{\theta_\text{old}}$​​ rollouts with no IS correction on the value loss — progressively estimates the wrong value function. It should be noted that regardless, PPO only uses the IS ratio for the actor for 1-step, even though it multiplies it by an advantage calcualted through GAE that depends on all future steps, and thus should depend on the entire IS ratio of the trajectory-to-go.
+A key feature of PPO is that it reuses each rollout batch across multiple gradient epochs (typically 2-4). This happens for both the critic and the actor. First, rollouts are obtained (data collection) according to the current policy. Then, for each of the 2-4 epochs, we cycle through minibatches to update both the actor and the critic with each minibatch. This is why the policy clipping in PPO is so important: by the 2nd epoch, $\pi\_\theta$ has already been updated away from $\pi\_old$, the policy used to collect the data and thus used to estimate the critic. As discussed later on, this multi-epoch reuse means the critic's regression target — computed from $π\_{\theta\_\text{old}}$​​ rollouts with no IS correction on the value loss — progressively estimates the wrong value function. It should be noted that regardless, PPO only uses the IS ratio for the actor for 1-step, even though it multiplies it by an advantage calcualted through GAE that depends on all future steps, and thus should depend on the entire IS ratio of the trajectory-to-go.
 #### 5.2 PPO's Structural Limitation: Non-Incrementality
 Despite using TD errors as its building block, PPO is **not incremental** in the spirit of TD learning. GAE is a _forward view_: it sums future TD errors out to the horizon. The algorithm must therefore wait for the complete rollout before computing any advantage or performing any update. This makes PPO — and all current LLM RL algorithms — subject to the same scalability bottleneck: the requirement for full sequential text generation before any parameter update. The original motivation for TD learning — updating online, before the episode ends — is not realised in the LLM context.
 ### 6. Critic-free Methods: ReMax, RLOO, GRPO and REINFORCE++
 
-Many PPO implementations learn a critic model which is an entirely separate model (effectively a full copy of the LLM for the value head), leading to a very high memory cost. While current implementations such as the one in the transformers RL library use a value head on top of the fixed LLM model (thus not requiring a copy), the field didn't necessarily pay much attention to this and instead aimed to create **critic-free** methods. These methods estimate the advantage entirely from sampled rewards, without learning $V(s_t)$. All of them work at the **response/outcome** level, that is they simply assign a scalar advantage to the entire completion, and broadcast it uniformly to every token. Thus, there is no per-token credit assignment, and the entire RL framework works as a contextual bandit (even if the LLM field does not acknowledge it). 
+Many PPO implementations learn a critic model which is an entirely separate model (effectively a full copy of the LLM for the value head), leading to a very high memory cost. While current implementations such as the one in the transformers RL library use a value head on top of the fixed LLM model (thus not requiring a copy), the field didn't necessarily pay much attention to this and instead aimed to create **critic-free** methods. These methods estimate the advantage entirely from sampled rewards, without learning $V(s\_t)$. All of them work at the **response/outcome** level, that is they simply assign a scalar advantage to the entire completion, and broadcast it uniformly to every token. Thus, there is no per-token credit assignment, and the entire RL framework works as a contextual bandit (even if the LLM field does not acknowledge it). 
 #### 6.1. ReMax
 ReMax (Li et al, 2023) eliminates the value function by using a **greedy rollout baseline**. The full algorithm for one prompt $q$ is:
-1. Sample completion $o \sim \pi_\theta (\cdot\|q)$.
-2. Generate a greedy completion by doing $\hat{o} \sim \arg \max \pi_\theta (\cdot\|s_t)$ at each completion step.
+1. Sample completion $o \sim \pi\_\theta (\cdot \mid q)$.
+2. Generate a greedy completion by doing $\hat{o} \sim \arg \max \pi\_\theta (\cdot \mid s\_t)$ at each completion step.
 3. Score both completions with a reward model $r(o)$ and $r(\hat{o})$. 
-4. Compute the advantage and apply it uniformly to every token of $o$ such that $\hat{A}_t = r(o)- r(\hat{o}), \forall t \in o$.
-5. Update the policy via $\nabla_\theta J(\theta) = \mathbb{E}\left[ \sum_t \hat{A}_t \nabla_\theta \log \pi_\theta(a_t\|s_t)\right]$
-Thus the reward of the greedy completion serves as a cheap proxy for $V^{\pi_\theta}(q)$. Because greedy decoding uses the _current_ policy weights, ReMax is fully on-policy. However, it is still a single-sample estimate and therefore high variance. ReMax requires only two forward passes per prompt, making it the most computationally efficient of the group-sampling alternatives.
+4. Compute the advantage and apply it uniformly to every token of $o$ such that $\hat{A}\_t = r(o)- r(\hat{o}), \forall t \in o$.
+5. Update the policy via $\nabla\_\theta J(\theta) = \mathbb{E}\left[ \sum\_t \hat{A}\_t \nabla\_\theta \log \pi\_\theta(a\_t \mid s\_t)\right]$
+Thus the reward of the greedy completion serves as a cheap proxy for $V^{\pi\_\theta}(q)$. Because greedy decoding uses the _current_ policy weights, ReMax is fully on-policy. However, it is still a single-sample estimate and therefore high variance. ReMax requires only two forward passes per prompt, making it the most computationally efficient of the group-sampling alternatives.
 
 #### 6.2. RLOO (REINFORCE Leave-One-Out)
-RLOO (Ahmadian et al.,2024) samples G completions $(o_1,...,o_G)$ from $\pi_{old}$ for each prompt $q$. The key insight here is that a naive group mean is a biased estimate of the adantage becuase completion $o_i$'s reward is included in its own baseline. The leave-one-out construction fixes this. For each completion $o_i$, the baseline is the mean reward of the other $G-1$ completions such that:
-					$\hat{A}_i = r_i - \frac{1}{G-1}\sum_{j \neq i}r_j$
+RLOO (Ahmadian et al.,2024) samples G completions $(o\_1,...,o\_G)$ from $\pi\_{old}$ for each prompt $q$. The key insight here is that a naive group mean is a biased estimate of the adantage becuase completion $o\_i$'s reward is included in its own baseline. The leave-one-out construction fixes this. For each completion $o\_i$, the baseline is the mean reward of the other $G-1$ completions such that:
+					$\hat{A}\_i = r\_i - \frac{1}{G-1}\sum\_{j \neq i}r\_j$
 Through algebrain manipulation, this is equivalent to:
-					$\hat{A}_i =\frac{G}{G-1} (r_i - \bar{r})$
-where $\bar{r} = \frac{1}{G} \sum_{j=1}^G r_j$.
-This advantage is then **broadcast uniformly** to every token of $o_i$.
-Note that $\bar{r}$ is an unbiased sample estimate of $V^{\pi_\text{old}}$, so RLOO — like GRPO — estimates the old policy's value, not the current policy's value. At large $G$, RLOO and GRPO converge to the same estimator (**I dont get why if it's biased**); the difference lies in whether the std normalisation is applied and whether $o_i$ is included in its own baseline.
+					$\hat{A}\_i =\frac{G}{G-1} (r\_i - \bar{r})$
+where $\bar{r} = \frac{1}{G} \sum\_{j=1}^G r\_j$.
+This advantage is then **broadcast uniformly** to every token of $o\_i$.
+Note that $\bar{r}$ is an unbiased sample estimate of $V^{\pi\_\text{old}}$, so RLOO — like GRPO — estimates the old policy's value, not the current policy's value. At large $G$, RLOO and GRPO converge to the same estimator (**I dont get why if it's biased**); the difference lies in whether the std normalisation is applied and whether $o\_i$ is included in its own baseline.
 
 #### 6.3. GRPO 
 GRPO (Shao et al., 2024) is the algorithm that powered DeepSeek-R1 and has become the dominant RL algorithm in the current reasoning literature. The full algorithm proceeds as follows.
 
-**Rollout**. For each prompt $q$, we sample a group of $G$ completions from the old policy. We score each with the reward model (or a rule-based verifier) such that $r_i = r(q,o_i)$.
+**Rollout**. For each prompt $q$, we sample a group of $G$ completions from the old policy. We score each with the reward model (or a rule-based verifier) such that $r\_i = r(q,o\_i)$.
 
 **Advantage computation.** Normalise by the full group statistics:
-						$\hat{A}_{i,t} = \frac{r_i - mean(r)}{std(r)}, \forall t$
-Thus the same scalar is broadcast to every token $t$ of completion $o_i$.
+						$\hat{A}\_{i,t} = \frac{r\_i - mean(r)}{std(r)}, \forall t$
+Thus the same scalar is broadcast to every token $t$ of completion $o\_i$.
 
-**Policy update**. Define the probability ratio $\rho_{i,t}(\theta) = \frac{\pi_\theta(o_{i,t}\|q,o_{i<t})}{\pi_{\theta_\text{old}}(o_{i,t}\|q,o_{i<t})}$. The GRPO loss is:
-$\mathcal{L}(\theta) = -\frac{1}{G}\sum_{i=1}^G \frac{1}{\|o_i\|}\sum_{t=1}^{\|o_i\|}\left[\min \left(\rho_{i,t}\hat{A}_{i},clip(\rho_{i,t},1-\epsilon,1+\epsilon)\hat{A}_i \right) - \beta \cdot D_{KL}[\pi_{\theta}(\cdot\|s_{i,t})\|\|\pi_{ref}(\cdot\|s_{i,t})]\right]$
+**Policy update**. Define the probability ratio $\rho\_{i,t}(\theta) = \frac{\pi\_\theta(o\_{i,t} \mid q,o\_{i<t})}{\pi\_{\theta\_\text{old}}(o\_{i,t} \mid q,o\_{i<t})}$. The GRPO loss is:
+$\mathcal{L}(\theta) = -\frac{1}{G}\sum\_{i=1}^G \frac{1}{ \mid o\_i \mid }\sum\_{t=1}^{ \mid o\_i \mid }\left[\min \left(\rho\_{i,t}\hat{A}\_{i},clip(\rho\_{i,t},1-\epsilon,1+\epsilon)\hat{A}\_i \right) - \beta \cdot D\_{KL}[\pi\_{\theta}(\cdot \mid s\_{i,t}) \mid  \mid \pi\_{ref}(\cdot \mid s\_{i,t})]\right]$
 
 A few things to note:
 1. The KL term is inside the loss, not the reward, unlike in PPO. In PPO, the drift KL is subtracted from the reward before computing advantages, and gradients do not pass through it. In GRPO, it is part of the differentiable loss, so the gradient of the KL estimator directly enters the parameter update. As Shah et al. (2026) show, this interacts poorly with biased KL estimators (specifically the K3 estimator used in most implementations), producing biased policy gradients.
 2. **The std normalisation is theoretically weak.** Dividing by the group standard deviation has no direct grounding in the policy gradient theorem — it is a variance-reduction heuristic. As REINFORCE++ shows, it introduces a statistical dependency between numerator and denominator that makes the estimator formally biased.
-3. As previously argued, there is no per-token credit assignment, and the group mean estimates $V^{\pi_{old}}$, not $V^\pi$. 
+3. As previously argued, there is no per-token credit assignment, and the group mean estimates $V^{\pi\_{old}}$, not $V^\pi$. 
 
 GRPO's main advantage is computational: by eliminating the critic, and usually relying on rule-based verifiers to model the reward, it reduces the number of model copies from four (PPO) to two (policy and reference), with a corresponding memory saving. The cost is that high variance forces large groups, requiring many forward passes per prompt, and that it relies on a heavily biased estimation.
 #### 6.4. REINFORCE++
 
 REINFORCE++ (Hu et al., 2025) starts from an identification of three compounding flaws in GRPO's local (prompt-level) normalisation:
 
-1. **Theoretical bias.** Because the numerator $r_i - mean(r)$ and the denominator $std(r)$are both computed from the same small group of $G$ samples, they are statistically dependent. The advantage estimator is therefore a ratio of dependent random variables, which is biased. This bias is not asymptotic: it exists for any finite $G$.
+1. **Theoretical bias.** Because the numerator $r\_i - mean(r)$ and the denominator $std(r)$are both computed from the same small group of $G$ samples, they are statistically dependent. The advantage estimator is therefore a ratio of dependent random variables, which is biased. This bias is not asymptotic: it exists for any finite $G$.
 2. **Numerical instability.** When $G$ is small (e.g. $G=4/8$) and all sampled completions receive similar rewards (which happens often on hard problems where the model always fails), $std(r) \rightarrow 0$ and the advantage explodes.
 3. **Prompt-level overfitting.** Optimising to be "better than peers from the same prompt" is not the same as optimising to achieve globally high reward. The policy can overfit to prompt-specific patterns, performing well within the local group while failing to generalise.
 
@@ -166,8 +166,8 @@ As the global batch size grows (e.g., $N=1024$), the batch mean and standard dev
 Empirically, REINFORCE++ achieves substantially better out-of-distribution generalisation than GRPO: when trained on a small set of AIME-24 problems, GRPO achieves near-perfect training accuracy but scores 0.0 on AIME-25, while REINFORCE++ generalises meaningfully. This suggests that GRPO's local normalisation does not merely add variance — it actively drives overfitting through the prompt-level objective mismatch identified above.
 
 ### 7. Direct preference Optimization (DPO)
-DPO (Rafailov et al., 2023) represents a distinct paradigm: it bypasses the RL training loop entirely by observing that, under a KL-constrained RLHF objective, the optimal policy has a closed form that implies the reward can be expressed directly in terms of the policy. This derivation leads to a contrastive training objective over paired preference data (chosen responses $o_w$ VS rejected responses $o_l$ to a specific prompt $q$). The loss is:
-							$\mathcal{L} = - \mathbb{E}\left[\log \sigma \left( \beta \log \frac{\pi_\theta(o_w\|q)}{\pi_{\theta_{ref}}(o_w\|q)} - \beta \log \frac{\pi_\theta(o_l\|q)}{\pi_{\theta_{ref}}(o_l\|q)}\right) \right]$
+DPO (Rafailov et al., 2023) represents a distinct paradigm: it bypasses the RL training loop entirely by observing that, under a KL-constrained RLHF objective, the optimal policy has a closed form that implies the reward can be expressed directly in terms of the policy. This derivation leads to a contrastive training objective over paired preference data (chosen responses $o\_w$ VS rejected responses $o\_l$ to a specific prompt $q$). The loss is:
+							$\mathcal{L} = - \mathbb{E}\left[\log \sigma \left( \beta \log \frac{\pi\_\theta(o\_w \mid q)}{\pi\_{\theta\_{ref}}(o\_w \mid q)} - \beta \log \frac{\pi\_\theta(o\_l \mid q)}{\pi\_{\theta\_{ref}}(o\_l \mid q)}\right) \right]$
 DPO can be optimised with standard gradient descent over a fixed, offline dataset, requiring no reward model, no critic, and no on-policy sampling. This makes it far cheaper and simpler to implement than PPO-based RLHF.
 
 However, DPO has a structural limitation that is particularly relevant to reasoning: in its classic formulation, it operates only on **sequence-level, terminal rewards**. It treats the entire generated text as a single unit and cannot assign credit to specific intermediate steps or tokens. This makes it poorly suited to tasks where the quality of a response depends on its reasoning _process_ rather than just its final output.
@@ -223,7 +223,7 @@ Currently much of RL for LLMs research focuses on outcome reward models, which s
 A much stronger idea lies in Process Reward Models (PRMs) which provide supervision for each token/intermediate step. If we have access to such a model, we can improve the efficiency of the search process with the following steps:
 1. Terminate a solution attempt that is not making progress, or is incorrect prior to reaching the  final answer. 
 2. Reset the agent to any intermediate, previously visited, state that has a high likelihood of  success.
-In fact, this reward supervision can be seen as a critic that estimates the probability that a particular intermediate state will lead to a solution $v_\theta(s_t) \rightarrow [0,1]$. Notice that with these two operations, and the general structure of language, we can implement any tree search procedure. This is the premise of several approaches (Yao et al., 2023; Hao et al., 2023; Zhou et al., 2024a).
+In fact, this reward supervision can be seen as a critic that estimates the probability that a particular intermediate state will lead to a solution $v\_\theta(s\_t) \rightarrow [0,1]$. Notice that with these two operations, and the general structure of language, we can implement any tree search procedure. This is the premise of several approaches (Yao et al., 2023; Hao et al., 2023; Zhou et al., 2024a).
 
 ### 12. Open Problems and Future Directions
 
