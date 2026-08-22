@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Watches an Obsidian "Blog Posts" folder and syncs any note there into this
+Scans an Obsidian "Blog Posts" folder and syncs any note there into this
 site's _posts/ as a Jekyll blog post, converting Obsidian-specific syntax
 (wikilinks, image embeds, callouts) to plain Markdown/Liquid, then commits
 and pushes.
 
-Intended to be run periodically (every ~2 min) by a macOS LaunchAgent.
+Run manually whenever you want to publish: `python3 bin/publish_from_obsidian.py`.
 Safe to run repeatedly: it tracks what it has already published in
 .synced.json inside the watched folder, and only re-syncs a note if its
 content actually changed.
