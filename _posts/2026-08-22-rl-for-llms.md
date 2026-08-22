@@ -54,7 +54,7 @@ PPO employs all four models simultaneously: the policy, the reference model, the
 #### 4.1. REINFORCE
 The simplest policy gradient algorithm, REINFORCE, sets $\psi\_t = R(\tau)$, the total trajectory reward. Thus its update rule (averaged over a batch of N trajectories) is:
 
-						$\nabla\_\theta J(\pi\_\theta) \approx \frac{1}{N}\sum\_{i=1}^N \sum\_{t=0}^T \nabla\_\theta \log \pi\_\theta(a\_t \mid s\_t) \cdot R(\tau\_i)$
+$\nabla\_\theta J(\pi\_\theta) \approx \frac{1}{N}\sum\_{i=1}^N \sum\_{t=0}^T \nabla\_\theta \log \pi\_\theta(a\_t \mid s\_t) \cdot R(\tau\_i)$
 
 The intuition is that if a trajectory received a high reward, we should increase the probability of all actions taken. However, there are two main issues with this approach. First, it uses the total trajectory reward, meaning past rewards influence updates to future actions, resulting in a violation of causality (e.g. the reward at time t=0 impacts the gradient of $\pi\_\theta(\cdot \mid s\_5$). Secondly, each step of the trajectory $t=0-T$ is updated in the same way, and thus this update rule does not consider per-step credit assignment. We can correct thus by using the **reward-to-go** formulation, that is $G\_t = \sum\_{k=t}^T r\_k$.
 
@@ -119,6 +119,7 @@ ReMax (Li et al, 2023) eliminates the value function by using a **greedy rollout
 3. Score both completions with a reward model $r(o)$ and $r(\hat{o})$. 
 4. Compute the advantage and apply it uniformly to every token of $o$ such that $\hat{A}\_t = r(o)- r(\hat{o}), \forall t \in o$.
 5. Update the policy via $\nabla\_\theta J(\theta) = \mathbb{E}\left[ \sum\_t \hat{A}\_t \nabla\_\theta \log \pi\_\theta(a\_t \mid s\_t)\right]$
+
 Thus the reward of the greedy completion serves as a cheap proxy for $V^{\pi\_\theta}(q)$. Because greedy decoding uses the _current_ policy weights, ReMax is fully on-policy. However, it is still a single-sample estimate and therefore high variance. ReMax requires only two forward passes per prompt, making it the most computationally efficient of the group-sampling alternatives.
 
 #### 6.2. RLOO (REINFORCE Leave-One-Out)
@@ -194,6 +195,7 @@ The R1 training pipeline proceeds in stages:
 2. **RLVR training** with GRPO and rule-based accuracy/format rewards.
 3. **Rejection sampling SFT** to curate high-quality reasoning traces from the RL checkpoint.
 4. **Final RL stage** combining reasoning and general instruction-following rewards.
+
 #### 9.4 RL vs. SFT for Reasoning: Generalisation vs. Memorisation
 A central question in the reasoning literature is whether RL genuinely improves a model's ability to _generalise_ its reasoning to out-of-distribution problems, or merely helps it _memorise_ patterns in the training distribution. Evidence from REINFORCE++ experiments (Hu et al., 2025) is instructive: GRPO trained on 30 AIME-24 problems achieves near-perfect training accuracy but completely fails on AIME-25, exhibiting catastrophic overfitting. REINFORCE++ with global normalisation, by contrast, learns more gradually but generalises substantially better. This suggests that certain implementation choices in RL algorithms — particularly how advantages are normalised — directly affect whether RL teaches reasoning or reward hacking.
 
@@ -202,6 +204,7 @@ A central question in the reasoning literature is whether RL genuinely improves 
 Reasoning capabilities in LLMs can be improved along two orthogonal axes:
 - **Train-time compute**: increased RL training, SFT on reasoning demonstrations, or distillation.
 - **Test-time compute (inference-time scaling)**: allocating more computation at inference time to produce better outputs.
+
 These axes are complementary rather than mutually exclusive. Models like OpenAI's o1 and o3 likely employ both heavy train-time RL and explicit inference-time scaling, contributing to their cost relative to conventional models. According to OpenAI, o3 used approximately 10× more training compute than o1.
 #### 10.2 Inference-Time Scaling Methods
 Inference-time scaling methods improve reasoning without modifying model weights:
@@ -223,6 +226,7 @@ Currently much of RL for LLMs research focuses on outcome reward models, which s
 A much stronger idea lies in Process Reward Models (PRMs) which provide supervision for each token/intermediate step. If we have access to such a model, we can improve the efficiency of the search process with the following steps:
 1. Terminate a solution attempt that is not making progress, or is incorrect prior to reaching the  final answer. 
 2. Reset the agent to any intermediate, previously visited, state that has a high likelihood of  success.
+
 In fact, this reward supervision can be seen as a critic that estimates the probability that a particular intermediate state will lead to a solution $v\_\theta(s\_t) \rightarrow [0,1]$. Notice that with these two operations, and the general structure of language, we can implement any tree search procedure. This is the premise of several approaches (Yao et al., 2023; Hao et al., 2023; Zhou et al., 2024a).
 
 ### 12. Open Problems and Future Directions
