@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: Ph.D. Student in Reinforcement Learning, University of Alberta / Amii
+subtitle: Ph.D. Student at the University of Alberta and Amii
 
 profile:
   align: right
