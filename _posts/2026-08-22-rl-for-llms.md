@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "RL for LLMs"
-date: 2026-08-22 09:00:00-0600
+date: 2026-07-20 09:00:00-0600
 description:
 tags:
 related_posts: false
